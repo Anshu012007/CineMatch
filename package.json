@@ -7,7 +7,7 @@
     "start": "node backend/server.js",
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run dev",
-    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev -- --open",
     "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
     "build": "npm --prefix frontend run build"
   },

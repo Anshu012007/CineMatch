@@ -8,10 +8,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 5000;
 const TMDB_API_KEY = process.env.TMDB_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
@@ -240,6 +244,10 @@ async function tmdbFetch(endpoint, params = {}) {
 // ====================================================================
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "cinematch_standalone.html"));
+});
 
 // Health check
 app.get("/api/health", (req, res) => {
