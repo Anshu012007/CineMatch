@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineMatch — All-In-One Standalone Web App</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' },
+            dark: { bg: '#0b0c10', surface: '#14161f', card: '#1a1d28', border: '#262b3d' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { background-color: #0b0c10; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hero-gradient { background: linear-gradient(180deg, rgba(11,12,16,0.1) 0%, rgba(11,12,16,0.7) 60%, rgba(11,12,16,1) 100%); }
+    .hero-side { background: linear-gradient(90deg, rgba(11,12,16,0.95) 0%, rgba(11,12,16,0.7) 40%, transparent 100%); }
+  </style>
+</head>
+<body class="selection:bg-brand-500 selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- High Fidelity Catalog ---
+    const GENRES = [
+      { id: 28, name: "Action" }, { id: 12, name: "Adventure" }, { id: 16, name: "Animation" },
+      { id: 35, name: "Comedy" }, { id: 80, name: "Crime" }, { id: 18, name: "Drama" },
+      { id: 10751, name: "Family" }, { id: 27, name: "Horror" }, { id: 878, name: "Science Fiction" },
+      { id: 53, name: "Thriller" }, { id: 10749, name: "Romance" }, { id: 9648, name: "Mystery" }
+    ];
+
+    const MOVIES = [
+      {
+        id: 157336,
+        title: "Interstellar",
+        tagline: "Mankind was born on Earth. It was never meant to die here.",
+        overview: "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
+        poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        backdrop_path: "/xJHokMbljvjADYdit5fK5VQsXEG.jpg",
+        release_date: "2014-11-05",
+        vote_average: 8.4,
+        runtime: 169,
+        genre_ids: [12, 18, 878],
+        trailer_key: "zSWdZVtXT7E",
+        director: "Christopher Nolan",
+        cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+      },
+      {
+        id: 27205,
+        title: "Inception",
+        tagline: "Your mind is the scene of the crime.",
+        overview: "Cobb, a skilled thief who commits corporate espionage by infiltrating the subconscious of his targets is offered a chance to regain his old life as payment for a task considered to be impossible: inception.",
+        poster_path: "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
+        backdrop_path: "/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg",
+        release_date: "2010-07-15",
+        vote_average: 8.4,
+        runtime: 148,
+        genre_ids: [28, 12, 878],
+        trailer_key: "YoHD9XEInc0",
+        director: "Christopher Nolan",
+        cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt", "Elliot Page"]
+      },
+      {
+        id: 155,
+        title: "The Dark Knight",
+        tagline: "Welcome to a world without rules.",
+        overview: "Batman raises the stakes in his war on crime with the help of Lt. Jim Gordon and District Attorney Harvey Dent, but finds himself in chaos unleashed by the Joker.",
+        poster_path: "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+        backdrop_path: "/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg",
+        release_date: "2008-07-16",
+        vote_average: 8.5,
+        runtime: 152,
+        genre_ids: [18, 28, 80, 53],
+        trailer_key: "EXeTwQWrcwY",
+        director: "Christopher Nolan",
+        cast: ["Christian Bale", "Heath Ledger", "Michael Caine"]
+      },
+      {
+        id: 496243,
+        title: "Parasite",
+        tagline: "Act like you own the place.",
+        overview: "All unemployed, Ki-taek's family takes peculiar interest in the wealthy and glamorous Parks for their livelihood until they get entangled in an unexpected incident.",
+        poster_path: "/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
+        backdrop_path: "/hiKmpZMGZsrkA3cdce8a7Dpos1j.jpg",
+        release_date: "2019-05-30",
+        vote_average: 8.5,
+        runtime: 132,
+        genre_ids: [35, 53, 18],
+        trailer_key: "5xH0hhMB8GE",
+        director: "Bong Joon-ho",
+        cast: ["Song Kang-ho", "Lee Sun-kyun", "Cho Yeo-jeong"]
+      },
+      {
+        id: 129,
+        title: "Spirited Away",
+        tagline: "Tunnel to a mystical world.",
+        overview: "A young girl, Chihiro, becomes trapped in a strange new world of spirits. When her parents undergo a mysterious transformation, she must call upon the courage she never knew she had.",
+        poster_path: "/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
+        backdrop_path: "/mSDvdv1bXp6wF2K2M4l0H9XvV4Z.jpg",
+        release_date: "2001-07-20",
+        vote_average: 8.5,
+        runtime: 125,
+        genre_ids: [16, 10751],
+        trailer_key: "ByXuk9QqQkk",
+        director: "Hayao Miyazaki",
+        cast: ["Rumi Hiiragi", "Miyu Irino"]
+      },
+      {
+        id: 694,
+        title: "The Shining",
+        tagline: "He came as the caretaker, but this hotel had its own caretakers.",
+        overview: "Jack Torrance accepts a caretaker job at the Overlook Hotel, where he, along with his wife and son, must live isolated for the winter. Madness lurks within.",
+        poster_path: "/xazWoLealQwEgqZ89MLZklLZD3k.jpg",
+        backdrop_path: "/mmd1HnuvAzrmqII9rutJ9RlaRwV.jpg",
+        release_date: "1980-05-23",
+        vote_average: 8.2,
+        runtime: 146,
+        genre_ids: [27, 53],
+        trailer_key: "S014446AA1M",
+        director: "Stanley Kubrick",
+        cast: ["Jack Nicholson", "Shelley Duvall"]
+      },
+      {
+        id: 603,
+        title: "The Matrix",
+        tagline: "Welcome to the Real World.",
+        overview: "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
+        poster_path: "/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+        backdrop_path: "/ncEWFZ8KnAnFLmKLJiqEfZeKuYZ.jpg",
+        release_date: "1999-03-30",
+        vote_average: 8.2,
+        runtime: 136,
+        genre_ids: [28, 878],
+        trailer_key: "vKQi3bBA1y8",
+        director: "The Wachowskis",
+        cast: ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"]
+      }
+    ];
+
+    const MOODS = [
+      { id: "happy", label: "Happy", icon: "😊", genres: [35, 16, 10751], desc: "Uplifting & feel-good" },
+      { id: "excited", label: "Excited", icon: "🔥", genres: [28, 12, 878], desc: "Action & grand thrills" },
+      { id: "funny", label: "Funny", icon: "😂", genres: [35], desc: "Pure comedy & laughs" },
+      { id: "scared", label: "Scared", icon: "👻", genres: [27, 53, 9648], desc: "Horror & suspense" },
+      { id: "sad", label: "Sad", icon: "😢", genres: [18, 10749], desc: "Emotional dramas" },
+      { id: "relaxed", label: "Relaxed", icon: "☕", genres: [16, 10751], desc: "Calm & aesthetic" }
+    ];
+
+    // --- Main App Component ---
+    function CineMatchApp() {
+      const [view, setView] = useState("home"); // home, details, explore, profile, group
+      const [selectedMovie, setSelectedMovie] = useState(MOVIES[0]);
+      const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem("cm_wl") || "[]"));
+      const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem("cm_fav") || "[]"));
+      const [watched, setWatched] = useState(() => JSON.parse(localStorage.getItem("cm_wtd") || "[]"));
+      const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("cm_user") || '{"name":"Alex","email":"alex@cinematch.app"}'));
+
+      // Modals
+      const [trailerKey, setTrailerKey] = useState(null);
+      const [surpriseOpen, setSurpriseOpen] = useState(false);
+      const [surpriseMovie, setSurpriseMovie] = useState(null);
+      const [aiOpen, setAiOpen] = useState(false);
+      const [toast, setToast] = useState(null);
+
+      // Search & Filters State
+      const [searchQuery, setSearchQuery] = useState("");
+      const [activeMood, setActiveMood] = useState("");
+      const [selectedGenres, setSelectedGenres] = useState([]);
+      const [minRating, setMinRating] = useState(0);
+
+      const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const toggleList = (movie, list, setList, key, label) => {
+        const exists = list.some(m => m.id === movie.id);
+        const updated = exists ? list.filter(m => m.id !== movie.id) : [movie, ...list];
+        setList(updated);
+        localStorage.setItem(key, JSON.stringify(updated));
+        showToast(`${exists ? "Removed from" : "Added to"} ${label}`);
+      };
+
+      const openDetails = (m) => {
+        setSelectedMovie(m);
+        setView("details");
+        window.scrollTo(0, 0);
+      };
+
+      const triggerSurprise = () => {
+        const picked = MOVIES[Math.floor(Math.random() * MOVIES.length)];
+        setSurpriseMovie(picked);
+        setSurpriseOpen(true);
+      };
+
+      // Filtered movies
+      let displayedMovies = [...MOVIES];
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        displayedMovies = displayedMovies.filter(m => m.title.toLowerCase().includes(q) || m.overview.toLowerCase().includes(q));
+      }
+      if (activeMood) {
+        const moodObj = MOODS.find(m => m.id === activeMood);
+        if (moodObj) displayedMovies = displayedMovies.filter(m => m.genre_ids.some(gid => moodObj.genres.includes(gid)));
+      }
+      if (selectedGenres.length > 0) {
+        displayedMovies = displayedMovies.filter(m => m.genre_ids.some(gid => selectedGenres.includes(gid)));
+      }
+      if (minRating > 0) {
+        displayedMovies = displayedMovies.filter(m => m.vote_average >= minRating);
+      }
+
+      // Personalized recommendation: Seed from last watched or favorited
+      const seedMovie = watched[0] || favorites[0] || MOVIES[1];
+      const becauseYouWatched = MOVIES.filter(m => m.id !== seedMovie.id && m.genre_ids.some(g => seedMovie.genre_ids.includes(g)));
+
+      return (
+        <div className="min-h-screen flex flex-col bg-dark-bg text-slate-100">
+          {/* Toast Notification */}
+          {toast && (
+            <div className="fixed bottom-5 right-5 z-50 px-4 py-3 rounded-2xl bg-slate-900/95 border border-brand-500 text-brand-300 text-sm font-semibold shadow-2xl animate-bounce">
+              {toast}
+            </div>
+          )}
+
+          {/* Navigation Bar */}
+          <nav className="sticky top-0 z-40 bg-dark-bg/90 backdrop-blur-xl border-b border-dark-border/60 py-3 px-4 sm:px-8 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-6">
+              <button onClick={() => setView("home")} className="flex items-center gap-2 text-xl font-black text-white">
+                <span className="p-2 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 text-white text-base">🎬</span>
+                <span>Cine<span className="text-brand-500">Match</span></span>
+              </button>
+              <div className="hidden md:flex items-center gap-4 text-sm font-medium">
+                <button onClick={() => setView("home")} className={view === "home" ? "text-brand-500 font-bold" : "text-slate-400 hover:text-white"}>Home</button>
+                <button onClick={() => setView("explore")} className={view === "explore" ? "text-brand-500 font-bold" : "text-slate-400 hover:text-white"}>Explore & Genres</button>
+                <button onClick={() => setView("group")} className={view === "group" ? "text-brand-500 font-bold" : "text-slate-400 hover:text-white"}>Group Match</button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex items-center gap-3">
+              <button onClick={() => setAiOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-dark-card border border-brand-500/50 text-brand-400 text-xs font-semibold hover:bg-brand-600/10">
+                <span>🤖 AI Curator</span>
+              </button>
+              <button onClick={triggerSurprise} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-dark-card border border-amber-500/40 text-amber-400 text-xs font-semibold hover:bg-amber-500/10">
+                <span>✨ Surprise Me</span>
+              </button>
+              <button onClick={() => setView("profile")} className="flex items-center gap-2 p-1 pl-2.5 rounded-full bg-dark-surface border border-dark-border hover:border-slate-400">
+                <span className="text-xs font-semibold text-slate-200 hidden sm:inline">{user?.name}</span>
+                <div className="w-7 h-7 rounded-full bg-brand-600 text-white font-bold text-xs flex items-center justify-center">
+                  {user?.name?.[0] || "U"}
+                </div>
+              </button>
+            </div>
+          </nav>
+
+          {/* VIEW: HOME */}
+          {view === "home" && (
+            <div className="pb-16">
+              {/* Spotlight Hero */}
+              <div className="relative min-h-[70vh] flex items-end pb-12 overflow-hidden">
+                <img src={`https://image.tmdb.org/t/p/original${selectedMovie.backdrop_path}`} alt={selectedMovie.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 hero-side" />
+                <div className="absolute inset-0 hero-gradient" />
+                <div className="relative z-10 max-w-7xl mx-auto px-6 w-full space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-brand-600 text-white text-xs font-bold uppercase">Spotlight</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/60 border border-white/10 text-amber-400 text-xs font-bold">⭐ {selectedMovie.vote_average}</span>
+                    <span className="text-xs text-slate-300">{selectedMovie.release_date.split("-")[0]} • {selectedMovie.runtime} mins</span>
+                  </div>
+                  <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight">{selectedMovie.title}</h1>
+                  <p className="text-sm text-brand-400 italic max-w-xl">"{selectedMovie.tagline}"</p>
+                  <p className="text-sm text-slate-200 line-clamp-3 max-w-xl">{selectedMovie.overview}</p>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button onClick={() => setTrailerKey(selectedMovie.trailer_key)} className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-bold text-sm shadow-xl flex items-center gap-2">
+                      <span>▶ Watch Trailer</span>
+                    </button>
+                    <button onClick={() => openDetails(selectedMovie)} className="px-5 py-2.5 rounded-xl bg-dark-card border border-white/20 text-white font-semibold text-sm hover:bg-dark-border">
+                      More Info
+                    </button>
+                    <button onClick={() => toggleList(selectedMovie, watchlist, setWatchlist, "cm_wl", "Watchlist")} className="p-2.5 rounded-xl bg-dark-card border border-white/20 text-slate-200 hover:text-white" title="Watchlist">
+                      {watchlist.some(m => m.id === selectedMovie.id) ? "✓" : "+"}
+                    </button>
+                    <button onClick={() => toggleList(selectedMovie, favorites, setFavorites, "cm_fav", "Favorites")} className="p-2.5 rounded-xl bg-dark-card border border-white/20 text-rose-400 hover:text-rose-300" title="Favorite">
+                      ♥
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Filters */}
+              <div className="py-4 px-6 border-y border-dark-border/40 bg-dark-bg/80 backdrop-blur sticky top-14 z-30 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                <button onClick={() => setView("explore")} className="px-3.5 py-1.5 rounded-full bg-dark-card border border-dark-border text-xs font-semibold text-slate-300 hover:text-white shrink-0">
+                  🧭 All Genres
+                </button>
+                <div className="h-5 w-[1px] bg-dark-border mx-1 shrink-0" />
+                {MOODS.map(m => (
+                  <button key={m.id} onClick={() => setActiveMood(activeMood === m.id ? "" : m.id)} className={`px-3.5 py-1.5 rounded-full text-xs font-semibold shrink-0 border transition-all ${activeMood === m.id ? "bg-brand-600 border-brand-500 text-white" : "bg-dark-surface border-dark-border text-slate-300 hover:text-white"}`}>
+                    {m.icon} {m.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Movie Rows */}
+              <div className="max-w-7xl mx-auto px-6 space-y-8 mt-6">
+                {/* Because you watched recommendation row */}
+                {seedMovie && becauseYouWatched.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">Because you loved {seedMovie.title}</h3>
+                    <p className="text-xs text-slate-400 mb-3">Recommendations based on your activity</p>
+                    <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+                      {becauseYouWatched.map(m => (
+                        <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Trending Row */}
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Trending Now</h3>
+                  <p className="text-xs text-slate-400 mb-3">What cinephiles are watching worldwide</p>
+                  <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+                    {displayedMovies.map(m => (
+                      <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Rated Row */}
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Top Rated Masterpieces</h3>
+                  <p className="text-xs text-slate-400 mb-3">Critically acclaimed timeless cinema</p>
+                  <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+                    {[...MOVIES].sort((a,b) => b.vote_average - a.vote_average).map(m => (
+                      <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW: MOVIE DETAILS */}
+          {view === "details" && selectedMovie && (
+            <div className="pb-20">
+              <div className="relative h-[55vh] min-h-[400px]">
+                <img src={`https://image.tmdb.org/t/p/original${selectedMovie.backdrop_path}`} alt={selectedMovie.title} className="w-full h-full object-cover opacity-50" />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/60 to-transparent" />
+                <button onClick={() => setView("home")} className="absolute top-6 left-6 z-20 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/20 text-xs font-semibold text-white">
+                  ← Back to Home
+                </button>
+              </div>
+
+              <div className="max-w-7xl mx-auto px-6 -mt-36 relative z-10 flex flex-col md:flex-row gap-8">
+                <div className="w-60 aspect-[2/3] rounded-2xl overflow-hidden bg-dark-card border border-dark-border shrink-0 shadow-2xl">
+                  <img src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`} alt={selectedMovie.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-lg bg-amber-400/10 border border-amber-400/30 text-amber-400 font-bold text-sm">⭐ {selectedMovie.vote_average}</span>
+                    <span className="text-xs text-slate-300">{selectedMovie.release_date}</span>
+                    <span className="text-xs text-slate-300">• {selectedMovie.runtime} mins</span>
+                    <span className="text-xs text-slate-300">• Directed by {selectedMovie.director}</span>
+                  </div>
+                  <h1 className="text-4xl sm:text-5xl font-black text-white">{selectedMovie.title}</h1>
+                  <p className="text-sm text-brand-400 italic">"{selectedMovie.tagline}"</p>
+                  <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">{selectedMovie.overview}</p>
+                  
+                  <div className="pt-2 flex items-center gap-3">
+                    <button onClick={() => setTrailerKey(selectedMovie.trailer_key)} className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-xl">
+                      ▶ Watch Trailer
+                    </button>
+                    <button onClick={() => toggleList(selectedMovie, watchlist, setWatchlist, "cm_wl", "Watchlist")} className="px-4 py-2.5 rounded-xl bg-dark-card border border-dark-border text-sm font-semibold hover:border-slate-400">
+                      {watchlist.some(m => m.id === selectedMovie.id) ? "✓ In Watchlist" : "+ Add to Watchlist"}
+                    </button>
+                    <button onClick={() => toggleList(selectedMovie, favorites, setFavorites, "cm_fav", "Favorites")} className="px-4 py-2.5 rounded-xl bg-dark-card border border-dark-border text-sm font-semibold hover:border-rose-400 text-rose-400">
+                      {favorites.some(m => m.id === selectedMovie.id) ? "♥ Favorited" : "♥ Favorite"}
+                    </button>
+                    <button onClick={() => toggleList(selectedMovie, watched, setWatched, "cm_wtd", "Watched History")} className="px-4 py-2.5 rounded-xl bg-dark-card border border-dark-border text-sm font-semibold hover:border-emerald-400 text-emerald-400">
+                      {watched.some(m => m.id === selectedMovie.id) ? "✓ Watched" : "Mark Watched"}
+                    </button>
+                  </div>
+
+                  <div className="pt-6">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Starring Cast</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMovie.cast.map(c => (
+                        <span key={c} className="px-3 py-1 rounded-xl bg-dark-card border border-dark-border text-xs text-slate-200">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW: EXPLORE & GENRES */}
+          {view === "explore" && (
+            <div className="max-w-7xl mx-auto px-6 py-8 flex-1">
+              <h2 className="text-3xl font-black text-white mb-2">Explore by Mood & Genre</h2>
+              <p className="text-sm text-slate-400 mb-6">Select moods or multiple genres to discover tailored movies.</p>
+              
+              {/* Mood Buttons */}
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
+                {MOODS.map(m => (
+                  <button key={m.id} onClick={() => setActiveMood(activeMood === m.id ? "" : m.id)} className={`p-3 rounded-2xl border text-left transition-all ${activeMood === m.id ? "bg-brand-600/20 border-brand-500" : "bg-dark-card border-dark-border"}`}>
+                    <div className="text-2xl mb-1">{m.icon}</div>
+                    <div className="font-bold text-sm text-white">{m.label}</div>
+                    <div className="text-[10px] text-slate-400">{m.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Genre Pills */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {GENRES.map(g => {
+                  const active = selectedGenres.includes(g.id);
+                  return (
+                    <button key={g.id} onClick={() => setSelectedGenres(active ? selectedGenres.filter(id => id !== g.id) : [...selectedGenres, g.id])} className={`px-3 py-1 rounded-full text-xs font-semibold border ${active ? "bg-brand-600 border-brand-500 text-white" : "bg-dark-card border-dark-border text-slate-300"}`}>
+                      {g.name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {displayedMovies.map(m => (
+                  <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW: PROFILE */}
+          {view === "profile" && (
+            <div className="max-w-7xl mx-auto px-6 py-8 flex-1">
+              <div className="p-6 rounded-3xl bg-dark-surface border border-dark-border flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-brand-600 font-black text-2xl flex items-center justify-center text-white">{user.name[0]}</div>
+                  <div>
+                    <h2 className="text-2xl font-black text-white">{user.name}</h2>
+                    <p className="text-xs text-slate-400">{user.email}</p>
+                    <div className="flex gap-3 text-xs font-semibold mt-2">
+                      <span className="text-brand-400">{watchlist.length} in Watchlist</span> • <span className="text-rose-400">{favorites.length} Favorites</span> • <span className="text-emerald-400">{watched.length} Watched</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-4">Saved Watchlist ({watchlist.length})</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4 mb-10">
+                {watchlist.map(m => (
+                  <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                ))}
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-4">Favorites ({favorites.length})</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {favorites.map(m => (
+                  <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* VIEW: GROUP MATCH (PHASE 2) */}
+          {view === "group" && (
+            <div className="max-w-4xl mx-auto px-6 py-8 flex-1">
+              <h2 className="text-3xl font-black text-white mb-2">Group Recommendations</h2>
+              <p className="text-sm text-slate-400 mb-8">Multiple users pick genres and dealbreakers to find consensus movies with zero vetoes.</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="p-4 rounded-2xl bg-dark-surface border border-dark-border">
+                  <h4 className="font-bold text-white mb-2">Friend 1 (Sci-Fi & Action)</h4>
+                  <p className="text-xs text-slate-400">Likes: Science Fiction, Action | Dealbreaker: None</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-dark-surface border border-dark-border">
+                  <h4 className="font-bold text-white mb-2">Friend 2 (Drama & Comedy)</h4>
+                  <p className="text-xs text-slate-400">Likes: Drama, Comedy | Dealbreaker: Horror</p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 mb-8">
+                <span className="font-bold text-emerald-400 text-sm">🎯 98% Consensus Match: </span>
+                <span className="text-slate-300 text-sm">Interstellar & Inception satisfy both members' tastes without containing any Horror dealbreakers!</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[MOVIES[0], MOVIES[1]].map(m => (
+                  <MovieCard key={m.id} movie={m} onOpen={openDetails} onTrailer={setTrailerKey} watchlist={watchlist} favorites={favorites} onToggleWl={(m) => toggleList(m, watchlist, setWatchlist, "cm_wl", "Watchlist")} onToggleFav={(m) => toggleList(m, favorites, setFavorites, "cm_fav", "Favorites")} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TRAILER MODAL */}
+          {trailerKey && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+              <div className="relative w-full max-w-4xl bg-dark-surface border border-dark-border rounded-2xl overflow-hidden">
+                <div className="flex justify-between items-center px-4 py-3 border-b border-dark-border">
+                  <span className="font-bold text-sm text-white">Movie Trailer</span>
+                  <button onClick={() => setTrailerKey(null)} className="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                </div>
+                <div className="aspect-video w-full bg-black">
+                  <iframe src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`} className="w-full h-full border-0" allow="autoplay; encrypted-media" allowFullScreen />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SURPRISE ME MODAL */}
+          {surpriseOpen && surpriseMovie && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+              <div className="relative w-full max-w-lg bg-dark-surface border border-dark-border rounded-3xl p-6 text-center space-y-4">
+                <span className="text-3xl">✨</span>
+                <h3 className="text-xl font-bold text-white">Your CineMatch Surprise!</h3>
+                <img src={`https://image.tmdb.org/t/p/w500${surpriseMovie.poster_path}`} alt={surpriseMovie.title} className="w-36 aspect-[2/3] object-cover rounded-xl mx-auto shadow-2xl" />
+                <h4 className="text-lg font-black text-brand-500">{surpriseMovie.title}</h4>
+                <p className="text-xs text-slate-300 line-clamp-3">{surpriseMovie.overview}</p>
+                <div className="flex justify-center gap-3 pt-2">
+                  <button onClick={() => { setSurpriseOpen(false); openDetails(surpriseMovie); }} className="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold text-xs">View Details</button>
+                  <button onClick={triggerSurprise} className="px-4 py-2 rounded-xl bg-dark-card border border-dark-border text-xs text-slate-200">Spin Again</button>
+                  <button onClick={() => setSurpriseOpen(false)} className="px-4 py-2 rounded-xl bg-dark-card text-xs text-slate-400">Close</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI ASSISTANT MODAL (PHASE 2) */}
+          {aiOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+              <div className="relative w-full max-w-lg bg-dark-surface border border-dark-border rounded-3xl p-6 flex flex-col h-[550px]">
+                <div className="flex justify-between items-center pb-3 border-b border-dark-border">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-brand-600 text-white text-xs">🤖</span>
+                    <span className="font-bold text-sm text-white">CineMatch AI Assistant</span>
+                  </div>
+                  <button onClick={() => setAiOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+                </div>
+                <div className="flex-1 overflow-y-auto py-4 space-y-3 text-xs">
+                  <div className="p-3 rounded-2xl bg-dark-card text-slate-200 max-w-[85%]">
+                    Hi! I'm your AI film curator. Tell me what vibe you want, e.g.:
+                    <div className="mt-2 space-y-1 text-[11px] text-brand-400">
+                      <div>• "I want a scary movie under 2 hours"</div>
+                      <div>• "Suggest a movie like Interstellar but less complex"</div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-brand-600 text-white max-w-[85%] ml-auto">
+                    "Suggest a movie like Interstellar"
+                  </div>
+                  <div className="p-3 rounded-2xl bg-dark-card text-slate-200 max-w-[85%] space-y-2">
+                    <p>I recommend <strong>Inception</strong> (Mind-bending Sci-Fi directed by Christopher Nolan) or <strong>The Matrix</strong>!</p>
+                    <div className="p-2 rounded-xl bg-dark-bg border border-dark-border flex gap-2 items-center cursor-pointer" onClick={() => { setAiOpen(false); openDetails(MOVIES[1]); }}>
+                      <img src={`https://image.tmdb.org/t/p/w92${MOVIES[1].poster_path}`} className="w-8 h-12 rounded object-cover" />
+                      <div>
+                        <div className="font-bold text-white">Inception</div>
+                        <div className="text-[10px] text-amber-400">⭐ 8.4 Rating</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-dark-border flex gap-2">
+                  <input type="text" placeholder="Ask for any movie vibe..." className="flex-1 bg-dark-card border border-dark-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500" />
+                  <button className="px-4 py-2 rounded-xl bg-brand-600 text-white font-bold text-xs">Send</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- Subcomponent: MovieCard ---
+    function MovieCard({ movie, onOpen, onTrailer, watchlist, favorites, onToggleWl, onToggleFav }) {
+      const inWl = watchlist.some(m => m.id === movie.id);
+      const inFav = favorites.some(m => m.id === movie.id);
+
+      return (
+        <div className="flex-none w-[170px] sm:w-[190px] rounded-xl overflow-hidden bg-dark-surface border border-dark-border hover:border-brand-500/50 transition-all flex flex-col group">
+          <div className="relative aspect-[2/3] w-full bg-dark-card cursor-pointer" onClick={() => onOpen(movie)}>
+            <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/80 text-[11px] font-bold text-amber-400">
+              ⭐ {movie.vote_average}
+            </div>
+            <div className="absolute top-2 right-2 flex flex-col gap-1 z-10" onClick={e => e.stopPropagation()}>
+              <button onClick={() => onToggleFav(movie)} className={`p-1.5 rounded-full text-xs transition-colors ${inFav ? "bg-rose-600 text-white" : "bg-black/60 text-slate-300 hover:text-white"}`}>♥</button>
+              <button onClick={() => onToggleWl(movie)} className={`p-1.5 rounded-full text-xs transition-colors ${inWl ? "bg-brand-600 text-white" : "bg-black/60 text-slate-300 hover:text-white"}`}>+</button>
+            </div>
+          </div>
+          <div className="p-2.5 flex flex-col justify-between flex-1 cursor-pointer" onClick={() => onOpen(movie)}>
+            <div className="font-semibold text-xs text-white truncate group-hover:text-brand-500">{movie.title}</div>
+            <div className="text-[11px] text-slate-400 mt-1">{movie.release_date.split("-")[0]}</div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<CineMatchApp />);
+  </script>
+</body>
+</html>

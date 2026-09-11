@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0b0c10;
+    color: #f1f5f9;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Netflix-style scrollbar hiding & smooth scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Styled slim scrollbar for content areas */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0c10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262b3d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f43f5e;
+}
+
+/* Custom cinematic gradient overlays */
+.hero-gradient {
+  background: linear-gradient(
+    180deg,
+    rgba(11, 12, 16, 0.1) 0%,
+    rgba(11, 12, 16, 0.6) 60%,
+    rgba(11, 12, 16, 1) 100%
+  );
+}
+
+.hero-side-gradient {
+  background: linear-gradient(
+    90deg,
+    rgba(11, 12, 16, 0.95) 0%,
+    rgba(11, 12, 16, 0.7) 40%,
+    transparent 100%
+  );
+}

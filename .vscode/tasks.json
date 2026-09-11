@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CineMatch: Run All (Dev)",
+      "type": "shell",
+      "command": "npm run dev",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "CineMatch: Run Backend Only",
+      "type": "shell",
+      "command": "npm run dev:backend",
+      "problemMatcher": []
+    },
+    {
+      "label": "CineMatch: Run Frontend Only",
+      "type": "shell",
+      "command": "npm run dev:frontend",
+      "problemMatcher": []
+    },
+    {
+      "label": "CineMatch: Install All Dependencies",
+      "type": "shell",
+      "command": "npm run install:all",
+      "problemMatcher": []
+    }
+  ]
+}
