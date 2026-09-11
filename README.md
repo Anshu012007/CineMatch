@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CineMatch 🎬🍿
 
 **CineMatch** is a movie recommendation web application built with a modern, high-performance stack:
@@ -118,3 +119,7 @@ cinematch/
         ├── components/        # Hero, MovieCard, TrailerModal, etc.
         └── pages/             # Home, MovieDetails, Search, Explore, Profile, Group
 ```
+=======
+# CineMatch
+Repository for movie recommendation website
+>>>>>>> 925897b3b2ad6c2ed15a2016cd0450f621bca5dc
